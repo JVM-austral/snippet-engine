@@ -1,0 +1,3 @@
+spring.datasource.url=jdbc:postgresql://localhost:5432/authdb
+spring.datasource.username=your_user
+spring.datasource.password=your_password
