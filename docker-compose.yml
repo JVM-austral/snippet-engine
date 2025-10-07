@@ -2,7 +2,7 @@ version: "3.9"
 
 services:
   api:
-    container_name: "snippet_service"
+    container_name: "snippet_manager_service"
     build:
       context: .
       dockerfile: Dockerfile
@@ -18,7 +18,7 @@ services:
       - db
 
   db:
-    container_name: snippet_db
+    container_name: snippet_manager_db
     image: postgres:16
     ports:
       - "5435:5432"
