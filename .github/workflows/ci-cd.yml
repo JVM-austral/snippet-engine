@@ -67,3 +67,17 @@ jobs:
           tags: |
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:latest
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:${{ github.sha }}
+  deploy:
+    needs: push_to_registry
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Deploy to VM
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.VM_HOST }}
+          username: ${{ secrets.VM_USER }}
+          key: ${{ secrets.VM_SSH_KEY }}
+          script: |
+            cd ~/infrastructure
+            ./deploy.sh
