@@ -21,6 +21,13 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew build
+
+        env:
+          ORG_NAME: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.actor }}
+
   push_to_registry:
     needs: build
     runs-on: ubuntu-latest
