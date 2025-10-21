@@ -28,6 +28,7 @@ jobs:
     env:
       ORG_NAME: ${{ github.repository_owner }}
       REPO_NAME: ${{ github.event.repository.name }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
       - name: Checkout repository
