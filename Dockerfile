@@ -3,10 +3,10 @@ FROM gradle:8.5.0-jdk21 AS builder
 WORKDIR /home/gradle/src
 
 # Accept GitHub credentials as build args
-ARG GITHUB_ACTOR
-ARG GITHUB_TOKEN
-ENV GITHUB_ACTOR=${GITHUB_ACTOR}
-ENV GITHUB_TOKEN=${GITHUB_TOKEN}
+ARG USERNAME
+ARG TOKEN
+ENV GITHUB_ACTOR=${USERNAME}
+ENV GITHUB_TOKEN=${TOKEN}
 
 COPY build.gradle settings.gradle gradlew ./
 COPY gradle gradle
