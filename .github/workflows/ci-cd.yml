@@ -76,6 +76,9 @@ jobs:
           tags: |
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:latest
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:${{ github.sha }}
+          build-args: |
+            GITHUB_ACTOR=${{ github.actor }}
+            GITHUB_TOKEN=${{ secrets.GITHUB_TOKEN }}
   deploy:
     needs: push_to_registry
     runs-on: ubuntu-latest
