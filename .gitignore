@@ -40,3 +40,4 @@ out/
 .kotlin
 /src/main/resources/application-dev.properties
 .env
+gradle.properties
