@@ -21,6 +21,13 @@ jobs:
         run: chmod +x ./gradlew
       - name: Build with Gradle
         run: ./gradlew build
+
+        env:
+          ORG_NAME: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+          TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          USERNAME: ${{ github.actor }}
+
   push_to_registry:
     needs: build
     runs-on: ubuntu-latest
@@ -28,6 +35,8 @@ jobs:
     env:
       ORG_NAME: ${{ github.repository_owner }}
       REPO_NAME: ${{ github.event.repository.name }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      USERNAME: ${{ github.actor }}
 
     steps:
       - name: Checkout repository
@@ -67,6 +76,9 @@ jobs:
           tags: |
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:latest
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:${{ github.sha }}
+          build-args: |
+            USERNAME=${{ github.actor }}
+            TOKEN=${{ secrets.GITHUB_TOKEN }}
   deploy:
     needs: push_to_registry
     runs-on: ubuntu-latest

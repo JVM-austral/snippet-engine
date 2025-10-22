@@ -1,9 +1,9 @@
 plugins {
-	id 'org.jetbrains.kotlin.jvm' version '1.9.25'
-	id 'org.jetbrains.kotlin.plugin.spring' version '1.9.25'
+	id 'org.jetbrains.kotlin.jvm' version '2.1.0'
+	id 'org.jetbrains.kotlin.plugin.spring' version '2.1.0'
 	id 'org.springframework.boot' version '3.5.6'
 	id 'io.spring.dependency-management' version '1.1.7'
-	id 'org.jetbrains.kotlin.plugin.jpa' version '1.9.25'
+	id 'org.jetbrains.kotlin.plugin.jpa' version '2.1.0'
 	id 'jacoco'
 	id 'maven-publish'
 	id "org.jlleitschuh.gradle.ktlint" version "12.1.1"
@@ -19,6 +19,9 @@ java {
 		languageVersion = JavaLanguageVersion.of(21)
 	}
 }
+springBoot {
+    mainClass.set("engine.SnippetEngineApplicationKt")
+}
 
 repositories {
 	mavenCentral()
@@ -27,13 +30,36 @@ repositories {
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-validation'
 	implementation 'com.fasterxml.jackson.module:jackson-module-kotlin'
 	implementation 'org.jetbrains.kotlin:kotlin-reflect'
+    implementation 'org.JVM-austral:ast:1.1.14'
+    implementation 'org.JVM-austral:cli:1.1.14'
+    implementation 'org.JVM-austral:common:1.1.14'
+    implementation 'org.JVM-austral:formatter:1.1.14'
+    implementation 'org.JVM-austral:interpreter:1.1.14'
+    implementation 'org.JVM-austral:lexer:1.1.14'
+    implementation 'org.JVM-austral:linter:1.1.14'
+    implementation 'org.JVM-austral:parser:1.1.14'
+    implementation 'org.JVM-austral:runner:1.1.14'
+    implementation 'org.JVM-austral:token:1.1.14'
 	runtimeOnly 'org.postgresql:postgresql'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
 	testImplementation("com.h2database:h2")
 	testImplementation 'org.jetbrains.kotlin:kotlin-test-junit5'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+}
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven {
+        name = "GitHubPackages"
+        url = uri("https://maven.pkg.github.com/JVM-austral/tp-ingsis-interpreter")
+        credentials {
+            username = project.findProperty("gpr.user") ?: System.getenv("USERNAME")
+            password = project.findProperty("gpr.key") ?: System.getenv("TOKEN")
+        }
+    }
 }
 
 kotlin {
@@ -53,7 +79,7 @@ tasks.named('test') {
 }
 
 ktlint {
-	version.set("1.3.0")
+	version.set("1.4.1")
 	android.set(false)
 	outputColorName.set("RED")
 	ignoreFailures.set(false)

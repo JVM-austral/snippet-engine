@@ -1,11 +1,12 @@
-package ingsis.auth
+
+package engine
 
 import org.springframework.boot.autoconfigure.SpringBootApplication
 import org.springframework.boot.runApplication
 
 @SpringBootApplication
-class AuthApplication
+class SnippetEngineApplication
 
 fun main(args: Array<String>) {
-    runApplication<AuthApplication>(*args)
+    runApplication<SnippetEngineApplication>(*args)
 }
