@@ -6,6 +6,9 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+      args:
+        USERNAME: ${GITHUB_USERNAME}
+        TOKEN: ${GITHUB_TOKEN}
     ports:
       - "${SPRING_PORT_SNIPPET_ENGINE}:8080"
     environment:
@@ -14,6 +17,8 @@ services:
       - SPRING_DATASOURCE_PASSWORD=${SPRING_DATASOURCE_PASSWORD_SNIPPET_ENGINE}
       - SPRING_JPA_HIBERNATE_DDL_AUTO=${SPRING_JPA_HIBERNATE_DDL_AUTO_SNIPPET_ENGINE}
       - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE_SNIPPET_ENGINE}
+      - AUTH0_DOMAIN=${AUTH0_DOMAIN}
+      - AUTH0_AUDIENCE=${AUTH0_AUDIENCE}
     depends_on:
       - snippet_engine_db
 
