@@ -24,8 +24,7 @@ class SnippetEngineController(
         val parseDto = ParseDto(parseErrors)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(parseDto)
     }
+
     @GetMapping("/ping")
-    fun ping(): ResponseEntity<String> {
-        return ResponseEntity.status(HttpStatus.OK).body("pong")
-    }
+    fun ping(): ResponseEntity<String> = ResponseEntity.status(HttpStatus.OK).body("pong")
 }
