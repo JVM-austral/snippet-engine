@@ -6,7 +6,7 @@ import jakarta.validation.constraints.NotBlank
 
 data class TestSnippetInput(
     @field:NotBlank val language: String,
-    @field:NotBlank val version: Version,
-    val inputs: List<JsonNode> = emptyList(),
+    val version: Version,
+    val inputs: List<String> = emptyList(),
     val expectedOutputs: List<String> = emptyList(),
 )

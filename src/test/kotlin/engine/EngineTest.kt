@@ -1,5 +1,6 @@
 package engine
 
+import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import factory.Version
 import org.junit.jupiter.api.Test
@@ -36,14 +37,14 @@ class EngineTest {
         val code = "print(42)"
         val language = "austral"
         val version = anyValidVersion()
-        val input = ParseInput(code = code, language = language, version = version)
+        val input = ExecutionInput(code = code, language = language, version = version)
         val expectedOutputs = listOf("42")
         whenever(engineService.executeSnippet(code, language, version)).thenReturn(expectedOutputs)
 
         val response = controller.executeSnippet(input)
 
         assertEquals(HttpStatus.ACCEPTED, response.statusCode)
-        assertEquals(expectedOutputs, response.body!!.parseErrors)
+        assertEquals(expectedOutputs, response.body!!)
         verify(engineService).executeSnippet(code, language, version)
     }
 }

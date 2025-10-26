@@ -1,11 +1,13 @@
 package engine.inputs
 
+import com.fasterxml.jackson.databind.JsonNode
 import factory.Version
+
 import jakarta.validation.constraints.NotBlank
 
-data class ExecutionInput(
-    val code: String,
+data class AnalyzeCodeInput(
     @field:NotBlank val language: String,
     val version: Version,
-    val varInput: List<String>? = null,
+    val config: JsonNode,
+    val code: String,
 )
