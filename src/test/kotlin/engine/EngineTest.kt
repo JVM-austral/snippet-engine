@@ -1,6 +1,9 @@
 package engine
 
+import com.fasterxml.jackson.databind.ObjectMapper
+import engine.dto.LintDto
 import engine.dto.ParseDto
+import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import factory.Version
@@ -47,5 +50,62 @@ class EngineTest {
         assertEquals(HttpStatus.ACCEPTED, response.statusCode)
         assertEquals(expectedOutputs, response.body!!)
         verify(engineService).executeSnippet(input)
+    }
+
+    @Test
+    fun executeSnippet_withVarInput_returnsAcceptedAndOutputsFromService() {
+        val code = "readInput(x); print(x)"
+        val language = "austral"
+        val version = anyValidVersion()
+        val input = ExecutionInput(code = code, language = language, version = version, varInput = listOf("7"))
+        val expectedOutputs = listOf("7")
+        whenever(engineService.executeSnippet(input)).thenReturn(expectedOutputs)
+
+        val response = controller.executeSnippet(input)
+
+        assertEquals(HttpStatus.ACCEPTED, response.statusCode)
+        assertEquals(expectedOutputs, response.body!!)
+        verify(engineService).executeSnippet(input)
+    }
+
+    @Test
+    fun formatSnippet_returnsAcceptedAndFormattedFromService() {
+        val language = "austral"
+        val version = anyValidVersion()
+        val code = "x=1"
+        val config = ObjectMapper().readTree("{}")
+        val input = AnalyzeCodeInput(language = language, version = version, config = config, code = code)
+        val expectedFormatted = "x = 1"
+        whenever(engineService.formatWithOptions(input)).thenReturn(expectedFormatted)
+
+        val response = controller.formatSnippet(input)
+
+        assertEquals(HttpStatus.ACCEPTED, response.statusCode)
+        assertEquals(expectedFormatted, response.body!!)
+        verify(engineService).formatWithOptions(input)
+    }
+
+    @Test
+    fun analyzeSnippet_returnsAcceptedAndLintErrorsFromService() {
+        val language = "austral"
+        val version = anyValidVersion()
+        val code = "print(1)"
+        val config = ObjectMapper().readTree("{}")
+        val input = AnalyzeCodeInput(language = language, version = version, config = config, code = code)
+        val expected = LintDto(emptyList())
+        whenever(engineService.lintWithOptions(input)).thenReturn(expected)
+
+        val response = controller.analyzeSnippet(input)
+
+        assertEquals(HttpStatus.ACCEPTED, response.statusCode)
+        assertEquals(expected, response.body!!)
+        verify(engineService).lintWithOptions(input)
+    }
+
+    @Test
+    fun ping_returnsOkPong() {
+        val response = controller.ping()
+        assertEquals(HttpStatus.OK, response.statusCode)
+        assertEquals("pong", response.body)
     }
 }
