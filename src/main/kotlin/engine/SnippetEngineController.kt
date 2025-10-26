@@ -2,8 +2,8 @@ package engine
 
 import engine.dto.LintDto
 import engine.dto.ParseDto
-import engine.inputs.ExecutionInput
 import engine.inputs.AnalyzeCodeInput
+import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import engine.inputs.TestSnippetInput
 import jakarta.validation.Valid
@@ -43,16 +43,19 @@ class SnippetEngineController(
     }
 
     @PostMapping("/format")
-    fun formatSnippet(@RequestBody @Valid formatInput: AnalyzeCodeInput): ResponseEntity<String> {
+    fun formatSnippet(
+        @RequestBody @Valid formatInput: AnalyzeCodeInput,
+    ): ResponseEntity<String> {
         val output = engineService.formatWithOptions(formatInput)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
     }
 
     @PostMapping("/analyze")
-    fun analyzeSnippet(@RequestBody @Valid lintInput: AnalyzeCodeInput): ResponseEntity<LintDto> {
+    fun analyzeSnippet(
+        @RequestBody @Valid lintInput: AnalyzeCodeInput,
+    ): ResponseEntity<LintDto> {
         val errors = engineService.lintWithOptions(lintInput)
         val output = LintDto(errors)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
     }
-
 }

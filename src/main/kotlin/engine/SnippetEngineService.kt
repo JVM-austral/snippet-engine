@@ -17,10 +17,10 @@ import runner.RunnerImplementation
 
 @Service
 class SnippetEngineService(
-    private val objectMapper: ObjectMapper
+    private val objectMapper: ObjectMapper,
 ) {
     fun parseSnippet(
-        parseInput: ParseInput
+        parseInput: ParseInput,
     ): ParseDto {
         // Language have to be implemented in the future
         val runner = RunnerImplementation(parseInput.version.toString())
@@ -29,9 +29,8 @@ class SnippetEngineService(
     }
 
     fun executeSnippet(
-        input: ExecutionInput
+        input: ExecutionInput,
     ): List<String> {
-
         if (input.varInput == null) {
             val runner = RunnerImplementation(input.version.toString())
             val ran = runner.run(input.code)
@@ -45,10 +44,11 @@ class SnippetEngineService(
     }
 
     fun formatWithOptions(formatInput: AnalyzeCodeInput): String {
-        val config = when (formatInput.version) {
-            Version.V1 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV1::class.java)
-            Version.V2 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV2::class.java)
-        }
+        val config =
+            when (formatInput.version) {
+                Version.V1 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV1::class.java)
+                Version.V2 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV2::class.java)
+            }
 
         val runner = RunnerImplementation(formatInput.version.toString())
 
@@ -58,10 +58,11 @@ class SnippetEngineService(
     }
 
     fun lintWithOptions(lintInput: AnalyzeCodeInput): List<LinterError> {
-        val config = when (lintInput.version) {
-            Version.V1 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV1::class.java)
-            Version.V2 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV2::class.java)
-        }
+        val config =
+            when (lintInput.version) {
+                Version.V1 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV1::class.java)
+                Version.V2 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV2::class.java)
+            }
 
         val runner = RunnerImplementation(lintInput.version.toString())
 
@@ -69,6 +70,4 @@ class SnippetEngineService(
 
         return lintErrors
     }
-
-
 }

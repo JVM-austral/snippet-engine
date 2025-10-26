@@ -1,5 +1,6 @@
 package engine
 
+import engine.dto.ParseDto
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import factory.Version
@@ -23,13 +24,13 @@ class EngineTest {
         val version = anyValidVersion()
         val input = ParseInput(code = code, language = language, version = version)
         val expected = listOf("syntax error: unexpected token")
-        whenever(engineService.parseSnippet(code, language, version)).thenReturn(expected)
+        whenever(engineService.parseSnippet(input)).thenReturn(ParseDto(expected))
 
         val response = controller.parseSnippet(input)
 
         assertEquals(HttpStatus.ACCEPTED, response.statusCode)
         assertEquals(expected, response.body!!.parseErrors)
-        verify(engineService).parseSnippet(code, language, version)
+        verify(engineService).parseSnippet(input)
     }
 
     @Test
@@ -39,12 +40,12 @@ class EngineTest {
         val version = anyValidVersion()
         val input = ExecutionInput(code = code, language = language, version = version)
         val expectedOutputs = listOf("42")
-        whenever(engineService.executeSnippet(code, language, version)).thenReturn(expectedOutputs)
+        whenever(engineService.executeSnippet(input)).thenReturn(expectedOutputs)
 
         val response = controller.executeSnippet(input)
 
         assertEquals(HttpStatus.ACCEPTED, response.statusCode)
         assertEquals(expectedOutputs, response.body!!)
-        verify(engineService).executeSnippet(code, language, version)
+        verify(engineService).executeSnippet(input)
     }
 }
