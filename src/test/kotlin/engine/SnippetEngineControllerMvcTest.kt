@@ -2,6 +2,7 @@ package engine
 
 import com.fasterxml.jackson.databind.ObjectMapper
 import com.fasterxml.jackson.databind.node.ObjectNode
+import engine.dto.LintDto
 import engine.dto.ParseDto
 import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
@@ -74,7 +75,7 @@ class SnippetEngineControllerMvcTest {
         val version = anyValidVersion()
         val config: ObjectNode = objectMapper.createObjectNode() // empty config
         val input = AnalyzeCodeInput(language = "austral", version = version, config = config, code = "print(1)")
-        val formatted = "print(1)" // identity for test
+        val formatted = "print(1)"
         whenever(engineService.formatWithOptions(input)).thenReturn(formatted)
 
         mockMvc
@@ -93,8 +94,8 @@ class SnippetEngineControllerMvcTest {
         val version = anyValidVersion()
         val config: ObjectNode = objectMapper.createObjectNode()
         val input = AnalyzeCodeInput(language = "austral", version = version, config = config, code = "print(1)")
-        // Return empty list to avoid constructing external error types
-        whenever(engineService.lintWithOptions(input)).thenReturn(emptyList())
+
+        whenever(engineService.lintWithOptions(input)).thenReturn(LintDto(emptyList()))
 
         mockMvc
             .perform(

@@ -1,6 +1,7 @@
 package engine
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import engine.dto.LintDto
 import engine.dto.ParseDto
 import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
@@ -57,7 +58,7 @@ class SnippetEngineService(
         return formattedCode
     }
 
-    fun lintWithOptions(lintInput: AnalyzeCodeInput): List<LinterError> {
+    fun lintWithOptions(lintInput: AnalyzeCodeInput): LintDto {
         val config =
             when (lintInput.version) {
                 Version.V1 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV1::class.java)
@@ -68,6 +69,6 @@ class SnippetEngineService(
 
         val lintErrors = runner.lint(lintInput.code, config)
 
-        return lintErrors
+        return LintDto(lintErrors)
     }
 }

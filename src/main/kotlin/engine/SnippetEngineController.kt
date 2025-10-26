@@ -55,7 +55,6 @@ class SnippetEngineController(
         @RequestBody @Valid lintInput: AnalyzeCodeInput,
     ): ResponseEntity<LintDto> {
         val errors = engineService.lintWithOptions(lintInput)
-        val output = LintDto(errors)
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(errors)
     }
 }
