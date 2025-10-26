@@ -6,7 +6,6 @@ import engine.dto.ParseDto
 import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
-import error.LinterError
 import evaluator.input.MockInputProvider
 import factory.Version
 import formatterconfig.ConfigurableFormatterOptionsV1
