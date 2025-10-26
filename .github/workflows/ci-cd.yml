@@ -4,7 +4,7 @@ permissions:
 name: Java CI
 
 on:
-  push:
+  pull_request:
 
 jobs:
   build:
