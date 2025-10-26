@@ -5,8 +5,14 @@ WORKDIR /home/gradle/src
 # Accept GitHub credentials as build args
 ARG USERNAME
 ARG TOKEN
+ARG GITHUB_USERNAME
+ARG GITHUB_TOKEN
+
 ENV GITHUB_ACTOR=${USERNAME}
 ENV GITHUB_TOKEN=${TOKEN}
+
+ENV USERNAME=${USERNAME}
+ENV TOKEN=${TOKEN}
 
 COPY build.gradle settings.gradle gradlew ./
 COPY gradle gradle
