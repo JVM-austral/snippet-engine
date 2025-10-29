@@ -6,6 +6,7 @@ import jakarta.validation.constraints.NotBlank
 data class TestSnippetInput(
     @field:NotBlank val language: String,
     val version: Version,
-    val inputs: List<String> = emptyList(),
+    @field:NotBlank val code: String,
+    val varInputs: List<String> = emptyList(),
     val expectedOutputs: List<String> = emptyList(),
 )

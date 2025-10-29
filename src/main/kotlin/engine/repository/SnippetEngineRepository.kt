@@ -1,3 +1,3 @@
-package engine
+package engine.repository
 
 class SnippetEngineRepository

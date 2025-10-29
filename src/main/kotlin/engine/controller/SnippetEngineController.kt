@@ -1,11 +1,13 @@
-package engine
+package engine.controller
 
 import engine.dto.LintDto
 import engine.dto.ParseDto
+import engine.dto.TestSnippetDto
 import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import engine.inputs.TestSnippetInput
+import engine.service.SnippetEngineService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
 import org.springframework.http.ResponseEntity
@@ -31,8 +33,9 @@ class SnippetEngineController(
     @PostMapping("/test")
     fun testSnippet(
         @Valid @RequestBody req: TestSnippetInput,
-    ): ResponseEntity<ParseDto> {
-        TODO()
+    ): ResponseEntity<TestSnippetDto> {
+        val testDto = engineService.testSnippet(req)
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(testDto)
     }
 
     @PostMapping("/execute")

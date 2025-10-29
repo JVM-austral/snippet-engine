@@ -1,11 +1,13 @@
 package engine
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import engine.controller.SnippetEngineController
 import engine.dto.LintDto
 import engine.dto.ParseDto
 import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
+import engine.service.SnippetEngineService
 import factory.Version
 import org.junit.jupiter.api.Test
 import org.mockito.kotlin.mock
@@ -14,9 +16,10 @@ import org.mockito.kotlin.whenever
 import org.springframework.http.HttpStatus
 import kotlin.test.assertEquals
 
-class EngineTest {
+class EngineMockControllerTest {
     private val engineService: SnippetEngineService = mock()
     private val controller = SnippetEngineController(engineService)
+    private val objectMapper = ObjectMapper()
 
     private fun anyValidVersion(): Version = Version::class.java.enumConstants!!.first()
 
@@ -57,7 +60,7 @@ class EngineTest {
         val code = "readInput(x); print(x)"
         val language = "austral"
         val version = anyValidVersion()
-        val input = ExecutionInput(code = code, language = language, version = version, varInput = listOf("7"))
+        val input = ExecutionInput(code = code, language = language, version = version, varInputs = listOf("7"))
         val expectedOutputs = listOf("7")
         whenever(engineService.executeSnippet(input)).thenReturn(expectedOutputs)
 
