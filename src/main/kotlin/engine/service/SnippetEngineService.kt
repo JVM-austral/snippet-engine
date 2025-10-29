@@ -34,7 +34,7 @@ class SnippetEngineService(
     fun executeSnippet(
         input: ExecutionInput,
     ): List<String> {
-        if (input.varInputs.isNullOrEmpty() ) {
+        if (input.varInputs.isNullOrEmpty()) {
             val runner = RunnerImplementation(input.version.toString())
             val ran = runner.run(input.code)
             return ran.output
