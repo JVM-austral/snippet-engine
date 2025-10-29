@@ -7,5 +7,5 @@ data class ExecutionInput(
     val code: String,
     @field:NotBlank val language: String,
     val version: Version,
-    val varInput: List<String>? = null,
+    val varInputs: List<String>? = null,
 )
