@@ -7,6 +7,7 @@ import engine.inputs.AnalyzeCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import engine.inputs.TestSnippetInput
+import engine.service.SnippetBucketService
 import engine.service.SnippetEngineService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -21,20 +22,23 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/engine")
 class SnippetEngineController(
     val engineService: SnippetEngineService,
+    val bucketService: SnippetBucketService,
 ) {
     @PostMapping("/parse")
     fun parseSnippet(
         @Valid @RequestBody parseInput: ParseInput,
     ): ResponseEntity<ParseDto> {
-        val parseDto = engineService.parseSnippet(parseInput)
+        val code = bucketService.getAsset(parseInput.assetPath)
+        val parseDto = engineService.parseSnippet(parseInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(parseDto)
     }
 
     @PostMapping("/test")
     fun testSnippet(
-        @Valid @RequestBody req: TestSnippetInput,
+        @Valid @RequestBody testInput: TestSnippetInput,
     ): ResponseEntity<TestSnippetDto> {
-        val testDto = engineService.testSnippet(req)
+        val code = bucketService.getAsset(testInput.assetPath)
+        val testDto = engineService.testSnippet(testInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(testDto)
     }
 
@@ -42,7 +46,8 @@ class SnippetEngineController(
     fun executeSnippet(
         @Valid @RequestBody executionInput: ExecutionInput,
     ): ResponseEntity<List<String>> {
-        val outputs = engineService.executeSnippet(executionInput)
+        val code = bucketService.getAsset(executionInput.assetPath)
+        val outputs = engineService.executeSnippet(executionInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(outputs)
     }
 
@@ -50,7 +55,8 @@ class SnippetEngineController(
     fun formatSnippet(
         @RequestBody @Valid formatInput: AnalyzeCodeInput,
     ): ResponseEntity<String> {
-        val output = engineService.formatWithOptions(formatInput)
+        val code = bucketService.getAsset(formatInput.assetPath)
+        val output = engineService.formatWithOptions(formatInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
     }
 
@@ -58,7 +64,8 @@ class SnippetEngineController(
     fun analyzeSnippet(
         @RequestBody @Valid lintInput: AnalyzeCodeInput,
     ): ResponseEntity<LintDto> {
-        val errors = engineService.lintWithOptions(lintInput)
+        val code = bucketService.getAsset(lintInput.assetPath)
+        val errors = engineService.lintWithOptions(lintInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(errors)
     }
 

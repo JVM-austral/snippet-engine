@@ -8,5 +8,5 @@ data class AnalyzeCodeInput(
     @field:NotBlank val language: String,
     val version: Version,
     val config: JsonNode,
-    val code: String,
+    @field:NotBlank val assetPath: String,
 )
