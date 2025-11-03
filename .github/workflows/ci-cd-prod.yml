@@ -12,6 +12,12 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      ORG_NAME: ${{ github.repository_owner }}
+      REPO_NAME: ${{ github.event.repository.name }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      USERNAME: ${{ github.actor }}
+
     steps:
       - uses: actions/checkout@v4
       - name: Set up JDK 21
@@ -31,6 +37,8 @@ jobs:
     env:
       ORG_NAME: ${{ github.repository_owner }}
       REPO_NAME: ${{ github.event.repository.name }}
+      TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      USERNAME: ${{ github.actor }}
 
     steps:
       - name: Checkout repository
@@ -69,6 +77,9 @@ jobs:
           tags: |
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:prod-latest
             ghcr.io/${{ env.ORG_NAME }}/${{ env.REPO_NAME }}:prod-${{ github.sha }}
+          build-args: |
+            USERNAME=${{ github.actor }}
+            TOKEN=${{ secrets.GITHUB_TOKEN }}
 
   deploy:
     needs: push_to_registry
