@@ -73,10 +73,11 @@ class SnippetEngineController(
     fun analyzeManySnippets(
         @RequestBody @Valid lintInputs: List<AnalyzeCodeInput>,
     ): ResponseEntity<List<LintDto>> {
-        val results = lintInputs.map { lintInput ->
-            val code = bucketService.getAsset(lintInput.assetPath)
-            engineService.lintWithOptions(lintInput, code)
-        }
+        val results =
+            lintInputs.map { lintInput ->
+                val code = bucketService.getAsset(lintInput.assetPath)
+                engineService.lintWithOptions(lintInput, code)
+            }
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(results)
     }
 
@@ -84,14 +85,14 @@ class SnippetEngineController(
     fun formatManySnippets(
         @RequestBody @Valid formatInputs: List<AnalyzeCodeInput>,
     ): ResponseEntity<List<String>> {
-        val results = formatInputs.map { formatInput ->
-            val code = bucketService.getAsset(formatInput.assetPath)
-            engineService.formatWithOptions(formatInput, code)
-        }
+        val results =
+            formatInputs.map { formatInput ->
+                val code = bucketService.getAsset(formatInput.assetPath)
+                engineService.formatWithOptions(formatInput, code)
+            }
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(results)
     }
 
     @GetMapping("/ping")
     fun ping(): ResponseEntity<String> = ResponseEntity.status(HttpStatus.OK).body("pong")
-
 }
