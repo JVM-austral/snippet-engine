@@ -25,11 +25,12 @@ class SnippetEngineServiceTest {
     fun `parseSnippet returns errors for invalid code`() {
         val input =
             ParseInput(
-                code = "let incomplete: string = ",
+                assetPath = "",
                 language = "austral",
                 version = Version.V1,
             )
-        val result: ParseDto = service.parseSnippet(input)
+        val code = "let incomplete: string = "
+        val result: ParseDto = service.parseSnippet(input, code)
         assertTrue(result.parseErrors.isNotEmpty())
     }
 
@@ -37,11 +38,16 @@ class SnippetEngineServiceTest {
     fun `executeSnippet returns output for valid code`() {
         val input =
             ExecutionInput(
-                code = "println(\"Hello World\");",
+                assetPath = "",
                 language = "austral",
                 version = Version.V2,
             )
-        val output = service.executeSnippet(input)
+        val code = "println(\"Hello World\");"
+        val output =
+            service.executeSnippet(
+                input,
+                code,
+            )
         assertTrue(output.any { it.contains("Hello World") })
     }
 
@@ -49,12 +55,13 @@ class SnippetEngineServiceTest {
     fun `executeSnippet with varInputs returns correct output`() {
         val input =
             ExecutionInput(
-                code = "let x: string = readInput(\"First Input\"); println(x);",
+                assetPath = "",
                 language = "austral",
                 version = Version.V2,
                 varInputs = listOf("TestValue"),
             )
-        val output = service.executeSnippet(input)
+        val code = "let x: string = readInput(\"First Input\"); println(x);"
+        val output = service.executeSnippet(input, code)
         assertTrue(output.any { it.contains("TestValue") })
     }
 
@@ -67,9 +74,9 @@ class SnippetEngineServiceTest {
                 language = "austral",
                 version = Version.V1,
                 config = config,
-                code = code,
+                assetPath = "",
             )
-        val formatted = service.formatWithOptions(input)
+        val formatted = service.formatWithOptions(input, code)
         assertTrue(formatted.isNotEmpty())
         assertNotEquals(formatted, code)
     }
@@ -83,9 +90,9 @@ class SnippetEngineServiceTest {
                 language = "austral",
                 version = Version.V1,
                 config = config,
-                code = code,
+                assetPath = "",
             )
-        val lintResult: LintDto = service.lintWithOptions(input)
+        val lintResult: LintDto = service.lintWithOptions(input, code)
         assertNotNull(lintResult)
         assertTrue(lintResult.lintErrors.isEmpty())
     }
@@ -94,13 +101,14 @@ class SnippetEngineServiceTest {
     fun `testSnippet returns passed true for correct output`() {
         val input =
             TestSnippetInput(
-                code = "println(\"expected output\");",
+                assetPath = "",
                 language = "austral",
                 version = Version.V2,
                 varInputs = listOf(),
                 expectedOutputs = listOf("expected output"),
             )
-        val result: TestSnippetDto = service.testSnippet(input)
+        val code = "println(\"expected output\");"
+        val result: TestSnippetDto = service.testSnippet(input, code)
         assertTrue(result.passed)
         assertEquals(null, result.failedAt)
     }
@@ -109,13 +117,14 @@ class SnippetEngineServiceTest {
     fun `testSnippet returns passed false for incorrect output`() {
         val input =
             TestSnippetInput(
-                code = "println(\"wrong output\");",
+                assetPath = "",
                 language = "austral",
                 version = Version.V2,
                 varInputs = listOf(),
                 expectedOutputs = listOf("expected output"),
             )
-        val result: TestSnippetDto = service.testSnippet(input)
+        val code = "println(\"wrong output\");"
+        val result: TestSnippetDto = service.testSnippet(input, code)
         assertFalse(result.passed)
         assertNotNull(result.failedAt)
     }

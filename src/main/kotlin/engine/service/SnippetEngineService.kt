@@ -25,57 +25,66 @@ class SnippetEngineService(
 ) {
     fun parseSnippet(
         parseInput: ParseInput,
+        code: String,
     ): ParseDto {
         val runner = RunnerImplementation(parseInput.version.toString())
-        val ran = runner.run(parseInput.code)
+        val ran = runner.run(code)
         return ParseDto(ran.errors)
     }
 
     fun executeSnippet(
         input: ExecutionInput,
+        code: String,
     ): List<String> {
         if (input.varInputs.isNullOrEmpty()) {
             val runner = RunnerImplementation(input.version.toString())
-            val ran = runner.run(input.code)
+            val ran = runner.run(code)
             return ran.output
         }
 
         val inputProvider = ProvideQueueOfInputs(input.varInputs)
         val runner = RunnerImplementation(input.version.toString(), inputProvider = inputProvider)
-        val ran = runner.run(input.code)
+        val ran = runner.run(code)
         return ran.output
     }
 
-    fun formatWithOptions(formatInput: AnalyzeCodeInput): String {
+    fun formatWithOptions(
+        formatInput: AnalyzeCodeInput,
+        code: String,
+    ): String {
         val config =
             setFormatVersionConfig(formatInput)
 
         val runner = RunnerImplementation(formatInput.version.toString())
 
-        val formattedCode = runner.format(formatInput.code, config)
+        val formattedCode = runner.format(code, config)
 
         return formattedCode
     }
 
-    fun lintWithOptions(lintInput: AnalyzeCodeInput): LintDto {
+    fun lintWithOptions(
+        lintInput: AnalyzeCodeInput,
+        code: String,
+    ): LintDto {
         val config: ConfigurableAnalyzersOptions =
             setLintVersionOptions(lintInput)
 
         val runner = RunnerImplementation(lintInput.version.toString())
 
-        val lintErrors = runner.lint(lintInput.code, config)
+        val lintErrors = runner.lint(code, config)
 
         return LintDto(lintErrors)
     }
 
     fun testSnippet(
         input: TestSnippetInput,
+        code: String,
     ): TestSnippetDto {
         val runner = createRunnerForTest(input)
-        val ran = runner.run(input.code)
+        val ran = runner.run(code)
 
-        handleRunErrors(input, ran.errors)?.let { return it }
-        handleOutputVerification(input, ran.output)?.let { return it }
+        handleRunErrors(ran.errors, code)?.let { return it }
+        handleOutputVerification(input, ran.output, code)?.let { return it }
 
         return TestSnippetDto(
             passed = true,
@@ -86,11 +95,11 @@ class SnippetEngineService(
     private fun createRunnerForTest(input: TestSnippetInput) = RunnerImplementation(input.version.toString(), inputProvider = ProvideQueueOfInputs(input.varInputs))
 
     private fun handleRunErrors(
-        input: TestSnippetInput,
         errors: List<String>,
+        code: String,
     ): TestSnippetDto? {
         if (errors.isNotEmpty()) {
-            val errorLine = findTestErrorLine(input.code, errors[0])
+            val errorLine = findTestErrorLine(code, errors[0])
             return TestSnippetDto(
                 passed = false,
                 failedAt = errorLine,
@@ -114,10 +123,11 @@ class SnippetEngineService(
     private fun handleOutputVerification(
         input: TestSnippetInput,
         output: List<String>,
+        code: String,
     ): TestSnippetDto? {
         val (isSuccess, errorOutput) = assertPrintScriptOutputs(input.expectedOutputs, output)
         if (!isSuccess) {
-            val errorLine = findTestErrorLine(input.code, errorOutput)
+            val errorLine = findTestErrorLine(code, errorOutput)
             return TestSnippetDto(
                 passed = false,
                 failedAt = errorLine,
