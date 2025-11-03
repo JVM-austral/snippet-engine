@@ -1,5 +1,6 @@
 package engine.controller
 
+import engine.dto.ExecutionDto
 import engine.dto.LintDto
 import engine.dto.ParseDto
 import engine.dto.TestSnippetDto
@@ -45,7 +46,7 @@ class SnippetEngineController(
     @PostMapping("/execute")
     fun executeSnippet(
         @Valid @RequestBody executionInput: ExecutionInput,
-    ): ResponseEntity<List<String>> {
+    ): ResponseEntity<ExecutionDto> {
         val code = bucketService.getAsset(executionInput.assetPath)
         val outputs = engineService.executeSnippet(executionInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(outputs)
