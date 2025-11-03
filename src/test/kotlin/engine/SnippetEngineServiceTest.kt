@@ -48,7 +48,7 @@ class SnippetEngineServiceTest {
                 input,
                 code,
             )
-        assertTrue(output.any { it.contains("Hello World") })
+        assertTrue(output.output.any { it.contains("Hello World") })
     }
 
     @Test
@@ -62,7 +62,7 @@ class SnippetEngineServiceTest {
             )
         val code = "let x: string = readInput(\"First Input\"); println(x);"
         val output = service.executeSnippet(input, code)
-        assertTrue(output.any { it.contains("TestValue") })
+        assertTrue(output.output.any { it.contains("TestValue") })
     }
 
     @Test

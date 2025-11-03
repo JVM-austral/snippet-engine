@@ -1,6 +1,7 @@
 package engine.service
 
 import com.fasterxml.jackson.databind.ObjectMapper
+import engine.dto.ExecutionDto
 import engine.dto.LintDto
 import engine.dto.ParseDto
 import engine.dto.TestSnippetDto
@@ -35,17 +36,17 @@ class SnippetEngineService(
     fun executeSnippet(
         input: ExecutionInput,
         code: String,
-    ): List<String> {
+    ): ExecutionDto {
         if (input.varInputs.isNullOrEmpty()) {
             val runner = RunnerImplementation(input.version.toString())
             val ran = runner.run(code)
-            return ran.output
+            return ExecutionDto(output = ran.output, errors = ran.errors)
         }
 
         val inputProvider = ProvideQueueOfInputs(input.varInputs)
         val runner = RunnerImplementation(input.version.toString(), inputProvider = inputProvider)
         val ran = runner.run(code)
-        return ran.output
+        return ExecutionDto(output = ran.output, errors = ran.errors)
     }
 
     fun formatWithOptions(
