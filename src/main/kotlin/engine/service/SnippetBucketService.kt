@@ -17,7 +17,7 @@ class SnippetBucketService {
         val response =
             restClient
                 .get()
-                .uri("path")
+                .uri(path)
                 .retrieve()
                 .toEntity(String::class.java)
 
