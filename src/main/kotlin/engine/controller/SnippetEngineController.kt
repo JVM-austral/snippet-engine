@@ -29,8 +29,7 @@ class SnippetEngineController(
     fun parseSnippet(
         @Valid @RequestBody parseInput: ParseInput,
     ): ResponseEntity<ParseDto> {
-        val code = bucketService.getAsset(parseInput.assetPath)
-        val parseDto = engineService.parseSnippet(parseInput, code)
+        val parseDto = engineService.parseSnippet(parseInput)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(parseDto)
     }
 
