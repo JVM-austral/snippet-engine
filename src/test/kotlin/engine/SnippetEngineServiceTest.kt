@@ -23,14 +23,15 @@ class SnippetEngineServiceTest {
 
     @Test
     fun `parseSnippet returns errors for invalid code`() {
+        val code = "let incomplete: string = "
         val input =
             ParseInput(
-                assetPath = "",
                 language = "austral",
                 version = Version.V1,
+                code = code,
             )
-        val code = "let incomplete: string = "
-        val result: ParseDto = service.parseSnippet(input, code)
+
+        val result: ParseDto = service.parseSnippet(input)
         assertTrue(result.parseErrors.isNotEmpty())
     }
 
