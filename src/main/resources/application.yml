@@ -5,6 +5,11 @@ spring:
     password: password
     driver-class-name: org.postgresql.Driver
 
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+
   jpa:
     hibernate:
       ddl-auto: update
@@ -18,3 +23,10 @@ spring:
         jwt:
           issuer-uri: ${AUTH0_DOMAIN}
           audience: ${AUTH0_AUDIENCE}
+stream:
+  formater:"format-stream"
+  linter:"linter-stream"
+
+groups:
+    formater:"format-groups"
+    linter:"linter-groups"
