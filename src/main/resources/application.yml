@@ -1,13 +1,9 @@
 spring:
   datasource:
-    url: jdbc:postgresql://snippet_manager_db:5432/snippet-manager-db
+    url: jdbc:postgresql://snippet_engine_db:5432/snippet-engine-db
     username: sa
     password: password
     driver-class-name: org.postgresql.Driver
-  data:
-    redis:
-      host: ${REDIS_HOST:localhost}
-      port: ${REDIS_PORT:6379}
 
   jpa:
     hibernate:
@@ -15,16 +11,20 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
 
-auth0:
-  client-id: ${AUTH0_CLIENT_ID}
-  client-secret: ${AUTH0_CLIENT_SECRET}
-  domain: ${AUTH0_DOMAIN}
-  audience: ${AUTH0_AUDIENCE}
+security:
+  oauth2:
+    resourceserver:
+      jwt:
+        issuer-uri: ${AUTH0_DOMAIN}
+        audience: ${AUTH0_AUDIENCE}
 
 stream:
   formatter: "format-stream"
 
 groups:
   formatter: "format-groups"
-  linter: "linter-groups"
