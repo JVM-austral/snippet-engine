@@ -7,7 +7,7 @@ import org.springframework.test.context.ActiveProfiles
 
 @SpringBootTest(classes = [SnippetEngineApplication::class])
 @ActiveProfiles("test")
-class AuthApplicationTests {
+class EngineApplicationTests {
     @Test
     fun contextLoads() {
     }
