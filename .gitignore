@@ -41,3 +41,6 @@ out/
 /src/main/resources/application-dev.properties
 .env
 gradle.properties
+
+### Spring ###
+src/main/resources/application.properties
