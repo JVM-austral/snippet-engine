@@ -18,7 +18,7 @@ import java.time.Duration
 class FormatProductConsumer
     @Autowired
     constructor(
-        redis: RedisTemplate<String, String>,
+        redis: RedisTemplate<String, Any>,
         @Value("\${stream.formatter}") streamKey: String,
         @Value("\${groups.formatter}") groupId: String,
         val engineService: SnippetEngineService,
