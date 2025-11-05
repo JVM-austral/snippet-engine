@@ -28,10 +28,10 @@ class SnippetEngineServiceTest {
             ParseInput(
                 language = "austral",
                 version = Version.V1,
-                code = code,
+                assetPath = "",
             )
 
-        val result: ParseDto = service.parseSnippet(input)
+        val result: ParseDto = service.parseSnippet(input, code)
         assertTrue(result.parseErrors.isNotEmpty())
     }
 

@@ -26,9 +26,10 @@ class SnippetEngineService(
 ) {
     fun parseSnippet(
         parseInput: ParseInput,
+        code: String,
     ): ParseDto {
         val runner = RunnerImplementation(parseInput.version.toString())
-        val ran = runner.run(parseInput.code)
+        val ran = runner.run(code)
         return ParseDto(ran.errors)
     }
 
