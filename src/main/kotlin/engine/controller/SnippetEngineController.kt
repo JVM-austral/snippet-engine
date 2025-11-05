@@ -29,7 +29,8 @@ class SnippetEngineController(
     fun parseSnippet(
         @Valid @RequestBody parseInput: ParseInput,
     ): ResponseEntity<ParseDto> {
-        val parseDto = engineService.parseSnippet(parseInput)
+        val code = bucketService.getAsset(parseInput.assetPath)
+        val parseDto = engineService.parseSnippet(parseInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(parseDto)
     }
 
@@ -54,10 +55,11 @@ class SnippetEngineController(
     @PostMapping("/format")
     fun formatSnippet(
         @RequestBody @Valid formatInput: AnalyzeCodeInput,
-    ): ResponseEntity<String> {
+    ): ResponseEntity<Void> {
         val code = bucketService.getAsset(formatInput.assetPath)
         val output = engineService.formatWithOptions(formatInput, code)
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
+        bucketService.formatAsset(path = formatInput.assetPath, formattedCode = output)
+        return ResponseEntity.ok().build()
     }
 
     @PostMapping("/analyze")
@@ -84,13 +86,13 @@ class SnippetEngineController(
     @PostMapping("/format-many")
     fun formatManySnippets(
         @RequestBody @Valid formatInputs: List<AnalyzeCodeInput>,
-    ): ResponseEntity<List<String>> {
-        val results =
-            formatInputs.map { formatInput ->
-                val code = bucketService.getAsset(formatInput.assetPath)
-                engineService.formatWithOptions(formatInput, code)
-            }
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(results)
+    ): ResponseEntity<Void> {
+        formatInputs.map { formatInput ->
+            val code = bucketService.getAsset(formatInput.assetPath)
+            val output = engineService.formatWithOptions(formatInput, code)
+            bucketService.formatAsset(path = formatInput.assetPath, formattedCode = output)
+        }
+        return ResponseEntity.ok().build()
     }
 
     @GetMapping("/ping")
