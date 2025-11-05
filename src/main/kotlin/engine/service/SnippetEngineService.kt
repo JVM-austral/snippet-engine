@@ -17,7 +17,9 @@ import formatterconfig.ConfigurableFormatterOptionsV2
 import linterconfig.ConfigurableAnalyzerOptionsV1
 import linterconfig.ConfigurableAnalyzerOptionsV2
 import linterconfig.ConfigurableAnalyzersOptions
+import org.springframework.http.HttpStatus
 import org.springframework.stereotype.Service
+import org.springframework.web.server.ResponseStatusException
 import runner.RunnerImplementation
 
 @Service
@@ -29,7 +31,7 @@ class SnippetEngineService(
         code: String,
     ): ParseDto {
         val runner = RunnerImplementation(parseInput.version.toString())
-        val ran = runner.run(code)
+        val ran = runCatchingToHttp("Failed to parse snippet") { runner.run(code) }
         return ParseDto(ran.errors)
     }
 
@@ -39,13 +41,13 @@ class SnippetEngineService(
     ): ExecutionDto {
         if (input.varInputs.isNullOrEmpty()) {
             val runner = RunnerImplementation(input.version.toString())
-            val ran = runner.run(code)
+            val ran = runCatchingToHttp("Failed to execute snippet") { runner.run(code) }
             return ExecutionDto(output = ran.output, errors = ran.errors)
         }
 
         val inputProvider = ProvideQueueOfInputs(input.varInputs)
         val runner = RunnerImplementation(input.version.toString(), inputProvider = inputProvider)
-        val ran = runner.run(code)
+        val ran = runCatchingToHttp("Failed to execute snippet") { runner.run(code) }
         return ExecutionDto(output = ran.output, errors = ran.errors)
     }
 
@@ -58,7 +60,7 @@ class SnippetEngineService(
 
         val runner = RunnerImplementation(formatInput.version.toString())
 
-        val formattedCode = runner.format(code, config)
+        val formattedCode = runCatchingToHttp("Failed to format snippet") { runner.format(code, config) }
 
         return formattedCode
     }
@@ -72,7 +74,7 @@ class SnippetEngineService(
 
         val runner = RunnerImplementation(lintInput.version.toString())
 
-        val lintErrors = runner.lint(code, config)
+        val lintErrors = runCatchingToHttp("Failed to lint snippet") { runner.lint(code, config) }
 
         return LintDto(lintErrors)
     }
@@ -82,7 +84,7 @@ class SnippetEngineService(
         code: String,
     ): TestSnippetDto {
         val runner = createRunnerForTest(input)
-        val ran = runner.run(code)
+        val ran = runCatchingToHttp("Failed to run snippet tests") { runner.run(code) }
 
         handleRunErrors(ran.errors, code)?.let { return it }
         handleOutputVerification(input, ran.output, code)?.let { return it }
@@ -110,15 +112,31 @@ class SnippetEngineService(
     }
 
     private fun setLintVersionOptions(lintInput: AnalyzeCodeInput): ConfigurableAnalyzersOptions =
-        when (lintInput.version) {
-            Version.V1 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV1::class.java)
-            Version.V2 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV2::class.java)
+        try {
+            when (lintInput.version) {
+                Version.V1 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV1::class.java)
+                Version.V2 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV2::class.java)
+            }
+        } catch (ex: ResponseStatusException) {
+            throw ex
+        } catch (ex: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid linter options: ${ex.message}")
+        } catch (ex: Exception) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare linter options: ${ex.message}")
         }
 
     private fun setFormatVersionConfig(formatInput: AnalyzeCodeInput): ConfigurableFormatterOptions =
-        when (formatInput.version) {
-            Version.V1 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV1::class.java)
-            Version.V2 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV2::class.java)
+        try {
+            when (formatInput.version) {
+                Version.V1 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV1::class.java)
+                Version.V2 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV2::class.java)
+            }
+        } catch (ex: ResponseStatusException) {
+            throw ex
+        } catch (ex: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid formatter options: ${ex.message}")
+        } catch (ex: Exception) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare formatter options: ${ex.message}")
         }
 
     private fun handleOutputVerification(
@@ -165,5 +183,20 @@ class SnippetEngineService(
             }
         }
         return -1
+    }
+
+    private inline fun <T> runCatchingToHttp(
+        prefix: String,
+        block: () -> T,
+    ): T {
+        try {
+            return block()
+        } catch (ex: ResponseStatusException) {
+            throw ex
+        } catch (ex: IllegalArgumentException) {
+            throw ResponseStatusException(HttpStatus.BAD_REQUEST, "$prefix: ${ex.message}")
+        } catch (ex: Exception) {
+            throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "$prefix: ${ex.message}")
+        }
     }
 }
