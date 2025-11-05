@@ -14,7 +14,7 @@ import java.net.InetAddress
 abstract class RedisStreamConsumer<Value : Any>(
     protected val streamKey: String,
     protected val groupId: String,
-    private val redis: RedisTemplate<String, String>,
+    private val redis: RedisTemplate<String, Any>,
 ) {
     protected abstract fun onMessage(record: ObjectRecord<String, Value>)
 
