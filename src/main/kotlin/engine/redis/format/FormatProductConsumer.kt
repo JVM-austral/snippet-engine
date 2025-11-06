@@ -1,5 +1,6 @@
 package engine.redis.format
 
+import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import engine.inputs.AnalyzeCodeInput
 import engine.redis.RedisStreamConsumer
 import engine.service.SnippetBucketService
@@ -32,15 +33,26 @@ class FormatProductConsumer
                 .build()
 
         override fun onMessage(record: ObjectRecord<String, FormatProductCreated>) {
-            val formatProduct =
-                when (val raw = record.value) {
-                    else -> raw
+            val mapper = jacksonObjectMapper()
+            val rawValue = record.value
+
+            val formatProduct: FormatProductCreated =
+                when (rawValue) {
+                    is String -> mapper.readValue(rawValue, FormatProductCreated::class.java)
+                    is Map<*, *> -> {
+                        val nested = rawValue["value"]
+                        if (nested is String) {
+                            mapper.readValue(nested, FormatProductCreated::class.java)
+                        } else {
+                            mapper.convertValue(nested ?: rawValue, FormatProductCreated::class.java)
+                        }
+                    }
+                    else -> mapper.convertValue(rawValue, FormatProductCreated::class.java)
                 }
 
             println("📨 Received FormatProductCreated: $formatProduct")
 
             val formatInput = fromRedisReqToFormatInput(formatProduct)
-
             val snippetPath = formatInput.assetPath
             val code = bucketService.getAsset(snippetPath)
             val output = engineService.formatWithOptions(formatInput, code)
