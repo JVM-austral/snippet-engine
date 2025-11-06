@@ -34,7 +34,11 @@ services:
 
   snippet_manager_service:
     container_name: "snippet_manager_service"
-    image: ghcr.io/jvm-austral/snippet-manager:latest
+    # --- CAMBIO ---
+    # 'build' ha sido reemplazado por 'image'.
+    # Asegúrate de que esta URL de imagen sea correcta.
+    image: ghcr.io/jvm-austral/snippet-manager:latest # Reemplaza con tu imagen de manager
+    # --- FIN CAMBIO ---
     ports:
       - "${SPRING_PORT_SNIPPET_MANAGER}:8080"
     environment:
@@ -70,9 +74,14 @@ services:
 
   snippet_engine_service:
     container_name: "snippet_engine_service"
+    # --- CAMBIO ---
+    # 'image' ha sido reemplazado por 'build'.
+    # Esto asume que ejecutas 'docker-compose' desde el directorio
+    # que contiene el Dockerfile del 'snippet-engine-service'.
     build:
       context: .
       dockerfile: Dockerfile
+    # --- FIN CAMBIO ---
     ports:
       - "${SPRING_PORT_SNIPPET_ENGINE}:8080"
     environment:

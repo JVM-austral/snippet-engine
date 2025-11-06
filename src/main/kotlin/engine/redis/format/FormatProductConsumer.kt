@@ -1,10 +1,11 @@
 package engine.redis.format
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import com.fasterxml.jackson.databind.ObjectMapper
 import engine.inputs.AnalyzeCodeInput
 import engine.redis.RedisStreamConsumer
 import engine.service.SnippetBucketService
 import engine.service.SnippetEngineService
+import factory.Version
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.context.annotation.Profile
@@ -22,50 +23,50 @@ class FormatProductConsumer
         redis: RedisTemplate<String, Any>,
         @Value("\${stream.formatter}") streamKey: String,
         @Value("\${groups.formatter}") groupId: String,
-        val engineService: SnippetEngineService,
-        val bucketService: SnippetBucketService,
-    ) : RedisStreamConsumer<FormatProductCreated>(streamKey, groupId, redis) {
-        override fun options(): StreamReceiver.StreamReceiverOptions<String, ObjectRecord<String, FormatProductCreated>> =
+        private val engineService: SnippetEngineService,
+        private val bucketService: SnippetBucketService,
+        private val objectMapper: ObjectMapper,
+    ) : RedisStreamConsumer<String>(streamKey, groupId, redis) {
+        override fun options(): StreamReceiver.StreamReceiverOptions<String, ObjectRecord<String, String>> =
             StreamReceiver.StreamReceiverOptions
                 .builder()
-                .pollTimeout(Duration.ofMillis(1000 * 3)) // Set poll rate
-                .targetType(FormatProductCreated::class.java) // Set type to de-serialize record
+                .pollTimeout(Duration.ofSeconds(3))
+                .targetType(String::class.java)
                 .build()
 
-        override fun onMessage(record: ObjectRecord<String, FormatProductCreated>) {
-            val mapper = jacksonObjectMapper()
-            val rawValue = record.value
+        override fun onMessage(record: ObjectRecord<String, String>) {
+            try {
+                val response: FormatProductCreated = objectMapper.readValue(record.value, FormatProductCreated::class.java)
 
-            val formatProduct: FormatProductCreated =
-                when (rawValue) {
-                    is String -> mapper.readValue(rawValue, FormatProductCreated::class.java)
-                    is Map<*, *> -> {
-                        val nested = rawValue["value"]
-                        if (nested is String) {
-                            mapper.readValue(nested, FormatProductCreated::class.java)
-                        } else {
-                            mapper.convertValue(nested ?: rawValue, FormatProductCreated::class.java)
-                        }
-                    }
-                    else -> mapper.convertValue(rawValue, FormatProductCreated::class.java)
-                }
+                println("📨 Received FormatProductCreated: $response")
 
-            println("📨 Received FormatProductCreated: $formatProduct")
+                val formatInput = adaptEventResponseToService(response)
 
-            val formatInput = fromRedisReqToFormatInput(formatProduct)
-            val snippetPath = formatInput.assetPath
-            val code = bucketService.getAsset(snippetPath)
-            val output = engineService.formatWithOptions(formatInput, code)
-            bucketService.formatAsset(path = snippetPath, formattedCode = output)
+                val snippetPath = formatInput.assetPath
+                val code = bucketService.getAsset(snippetPath)
+                val output = engineService.formatWithOptions(formatInput, code)
+                bucketService.formatAsset(path = snippetPath, formattedCode = output)
+            } catch (e: Exception) {
+                println("❌ Error processing record: ${e.message}")
+                println("Record: ${record.value}")
+                e.printStackTrace()
+            }
         }
 
-        private fun fromRedisReqToFormatInput(formatProduct: FormatProductCreated): AnalyzeCodeInput {
+        private fun adaptEventResponseToService(input: FormatProductCreated): AnalyzeCodeInput {
+            val version =
+                when (input.version) {
+                    "V1" -> Version.V1
+                    "V2" -> Version.V2
+                    else -> throw IllegalArgumentException("Unsupported version: ${input.version}")
+                }
+
             val formatInput =
                 AnalyzeCodeInput(
-                    language = formatProduct.language,
-                    version = formatProduct.version,
-                    assetPath = formatProduct.assetPath,
-                    config = formatProduct.config,
+                    language = input.language,
+                    version = version,
+                    assetPath = input.assetPath,
+                    config = input.config,
                 )
             return formatInput
         }
