@@ -1,7 +1,5 @@
 package engine.redis.format
 
-import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
-import com.fasterxml.jackson.module.kotlin.readValue
 import engine.inputs.AnalyzeCodeInput
 import engine.redis.RedisStreamConsumer
 import engine.service.SnippetBucketService
@@ -25,39 +23,38 @@ class FormatProductConsumer
         @Value("\${groups.formatter}") groupId: String,
         val engineService: SnippetEngineService,
         val bucketService: SnippetBucketService,
-    ) : RedisStreamConsumer<Map<String, String>>(streamKey, groupId, redis) {
-        private val objectMapper = jacksonObjectMapper()
-
-        override fun options(): StreamReceiver.StreamReceiverOptions<String, ObjectRecord<String, Map<String, String>>> =
+    ) : RedisStreamConsumer<FormatProductCreated>(streamKey, groupId, redis) {
+        override fun options(): StreamReceiver.StreamReceiverOptions<String, ObjectRecord<String, FormatProductCreated>> =
             StreamReceiver.StreamReceiverOptions
                 .builder()
-                .pollTimeout(Duration.ofMillis(1000 * 3))
-                .targetType(Map::class.java as Class<Map<String, String>>)
+                .pollTimeout(Duration.ofMillis(1000 * 3)) // Set poll rate
+                .targetType(FormatProductCreated::class.java) // Set type to de-serialize record
                 .build()
 
-        override fun onMessage(record: ObjectRecord<String, Map<String, String>>) {
-            try {
-                val jsonString =
-                    record.value["value"]
-                        ?: throw IllegalArgumentException("No 'value' field found in record")
-                val formatProductCreated = objectMapper.readValue<FormatProductCreated>(jsonString)
+        override fun onMessage(record: ObjectRecord<String, FormatProductCreated>) {
+            val formatProduct =
+                when (val raw = record.value) {
+                    else -> raw
+                }
 
-                val formatInput = fromFormatProductCreatedToAnalyzeCodeInput(formatProductCreated)
-                val snippetPath = formatInput.assetPath
-                val code = bucketService.getAsset(snippetPath)
-                val output = engineService.formatWithOptions(formatInput = formatInput, code)
-                bucketService.formatAsset(path = snippetPath, formattedCode = output)
-            } catch (e: Exception) {
-                println("Error processing message: ${e.message}")
-                e.printStackTrace()
-            }
+            println("📨 Received FormatProductCreated: $formatProduct")
+
+            val formatInput = fromRedisReqToFormatInput(formatProduct)
+
+            val snippetPath = formatInput.assetPath
+            val code = bucketService.getAsset(snippetPath)
+            val output = engineService.formatWithOptions(formatInput, code)
+            bucketService.formatAsset(path = snippetPath, formattedCode = output)
         }
 
-        private fun fromFormatProductCreatedToAnalyzeCodeInput(formatProductCreated: FormatProductCreated): AnalyzeCodeInput =
-            AnalyzeCodeInput(
-                language = formatProductCreated.language,
-                version = formatProductCreated.version,
-                assetPath = formatProductCreated.assetPath,
-                config = formatProductCreated.config,
-            )
+        private fun fromRedisReqToFormatInput(formatProduct: FormatProductCreated): AnalyzeCodeInput {
+            val formatInput =
+                AnalyzeCodeInput(
+                    language = formatProduct.language,
+                    version = formatProduct.version,
+                    assetPath = formatProduct.assetPath,
+                    config = formatProduct.config,
+                )
+            return formatInput
+        }
     }
