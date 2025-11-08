@@ -38,8 +38,6 @@ class FormatProductConsumer
             try {
                 val response: FormatProductCreated = objectMapper.readValue(record.value, FormatProductCreated::class.java)
 
-                println("📨 Received FormatProductCreated: $response")
-
                 val formatInput = adaptEventResponseToService(response)
 
                 val snippetPath = formatInput.assetPath
