@@ -45,7 +45,7 @@ class FormatProductConsumer
                 val output = engineService.formatWithOptions(formatInput, code)
                 bucketService.formatAsset(path = snippetPath, formattedCode = output)
             } catch (e: Exception) {
-                println("❌ Error processing record: ${e.message}")
+                println("Error processing record: ${e.message}")
                 println("Record: ${record.value}")
                 e.printStackTrace()
             }

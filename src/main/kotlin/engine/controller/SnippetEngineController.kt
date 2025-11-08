@@ -5,6 +5,7 @@ import engine.dto.LintDto
 import engine.dto.ParseDto
 import engine.dto.TestSnippetDto
 import engine.inputs.AnalyzeCodeInput
+import engine.inputs.AnalyzeUniqueCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import engine.inputs.TestSnippetInput
@@ -54,11 +55,16 @@ class SnippetEngineController(
 
     @PostMapping("/format")
     fun formatSnippet(
-        @RequestBody @Valid formatInput: AnalyzeCodeInput,
-    ): ResponseEntity<Void> {
-        val code = bucketService.getAsset(formatInput.assetPath)
-        val output = engineService.formatWithOptions(formatInput, code)
-        bucketService.formatAsset(path = formatInput.assetPath, formattedCode = output)
+        @RequestBody @Valid formatInput: AnalyzeUniqueCodeInput,
+    ): ResponseEntity<String> {
+        val inputAdapter =
+            AnalyzeCodeInput(
+                assetPath = "",
+                language = formatInput.language,
+                version = formatInput.version,
+                config = formatInput.config,
+            )
+        val output = engineService.formatWithOptions(inputAdapter, formatInput.code)
         return ResponseEntity.ok().build()
     }
 
@@ -69,30 +75,6 @@ class SnippetEngineController(
         val code = bucketService.getAsset(lintInput.assetPath)
         val errors = engineService.lintWithOptions(lintInput, code)
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(errors)
-    }
-
-    @PostMapping("/analyze-many")
-    fun analyzeManySnippets(
-        @RequestBody @Valid lintInputs: List<AnalyzeCodeInput>,
-    ): ResponseEntity<List<LintDto>> {
-        val results =
-            lintInputs.map { lintInput ->
-                val code = bucketService.getAsset(lintInput.assetPath)
-                engineService.lintWithOptions(lintInput, code)
-            }
-        return ResponseEntity.status(HttpStatus.ACCEPTED).body(results)
-    }
-
-    @PostMapping("/format-many")
-    fun formatManySnippets(
-        @RequestBody @Valid formatInputs: List<AnalyzeCodeInput>,
-    ): ResponseEntity<Void> {
-        formatInputs.map { formatInput ->
-            val code = bucketService.getAsset(formatInput.assetPath)
-            val output = engineService.formatWithOptions(formatInput, code)
-            bucketService.formatAsset(path = formatInput.assetPath, formattedCode = output)
-        }
-        return ResponseEntity.ok().build()
     }
 
     @GetMapping("/ping")
