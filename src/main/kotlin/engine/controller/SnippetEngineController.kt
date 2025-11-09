@@ -65,7 +65,7 @@ class SnippetEngineController(
                 config = formatInput.config,
             )
         val output = engineService.formatWithOptions(inputAdapter, formatInput.code)
-        return ResponseEntity.ok().build()
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
     }
 
     @PostMapping("/analyze")
