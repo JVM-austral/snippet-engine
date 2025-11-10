@@ -4,14 +4,14 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
 @Service
-class SnippetBucketService {
+class SnippetBucketClient : SnippetClient {
     private val restClient =
         RestClient
             .builder()
             .baseUrl("http://asset-service:8080")
             .build()
 
-    fun getAsset(
+    override fun getAsset(
         path: String,
     ): String {
         val response =
@@ -24,7 +24,7 @@ class SnippetBucketService {
         return response.body ?: throw RuntimeException("Asset no encontrado")
     }
 
-    fun formatAsset(
+    override fun formatAsset(
         path: String,
         formattedCode: String,
     ): String {

@@ -3,7 +3,7 @@ package engine.redis.format
 import com.fasterxml.jackson.databind.ObjectMapper
 import engine.inputs.AnalyzeCodeInput
 import engine.redis.RedisStreamConsumer
-import engine.service.SnippetBucketService
+import engine.service.SnippetBucketClient
 import engine.service.SnippetEngineService
 import factory.Version
 import org.springframework.beans.factory.annotation.Autowired
@@ -24,7 +24,7 @@ class FormatProductConsumer
         @Value("\${stream.formatter}") streamKey: String,
         @Value("\${groups.formatter}") groupId: String,
         private val engineService: SnippetEngineService,
-        private val bucketService: SnippetBucketService,
+        private val bucketService: SnippetBucketClient,
         private val objectMapper: ObjectMapper,
     ) : RedisStreamConsumer<String>(streamKey, groupId, redis) {
         override fun options(): StreamReceiver.StreamReceiverOptions<String, ObjectRecord<String, String>> =
