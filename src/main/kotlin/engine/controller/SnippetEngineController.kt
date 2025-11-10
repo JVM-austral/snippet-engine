@@ -9,7 +9,7 @@ import engine.inputs.AnalyzeUniqueCodeInput
 import engine.inputs.ExecutionInput
 import engine.inputs.ParseInput
 import engine.inputs.TestSnippetInput
-import engine.service.SnippetBucketService
+import engine.service.SnippetClient
 import engine.service.SnippetEngineService
 import jakarta.validation.Valid
 import org.springframework.http.HttpStatus
@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/engine")
 class SnippetEngineController(
     val engineService: SnippetEngineService,
-    val bucketService: SnippetBucketService,
+    val bucketService: SnippetClient,
 ) {
     @PostMapping("/parse")
     fun parseSnippet(
