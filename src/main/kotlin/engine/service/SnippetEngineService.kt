@@ -26,12 +26,20 @@ import runner.RunnerImplementation
 class SnippetEngineService(
     private val objectMapper: ObjectMapper,
 ) {
+    private val log = org.slf4j.LoggerFactory.getLogger(SnippetEngineService::class.java)
+
     fun parseSnippet(
         parseInput: ParseInput,
         code: String,
     ): ParseDto {
+        log.info("Parsing snippet with version: ${parseInput.version}")
         val runner = RunnerImplementation(parseInput.version.toString())
         val ran = runCatchingToHttp("Failed to parse snippet") { runner.run(code) }
+        if (ran.errors.isEmpty()) {
+            log.info("Snippet parsed successfully")
+        } else {
+            log.warn("Snippet parsed with errors: ${ran.errors}")
+        }
         return ParseDto(ran.errors)
     }
 
@@ -39,15 +47,27 @@ class SnippetEngineService(
         input: ExecutionInput,
         code: String,
     ): ExecutionDto {
+        log.info("Executing snippet with version: ${input.version}")
         if (input.varInputs.isNullOrEmpty()) {
             val runner = RunnerImplementation(input.version.toString())
             val ran = runCatchingToHttp("Failed to execute snippet") { runner.run(code) }
+            if (ran.errors.isEmpty()) {
+                log.info("Snippet executed successfully without inputs")
+            } else {
+                log.warn("Snippet execution failed: ${ran.errors}")
+            }
             return ExecutionDto(output = ran.output, errors = ran.errors)
         }
 
+        log.info("Executing snippet with ${input.varInputs.size} inputs")
         val inputProvider = ProvideQueueOfInputs(input.varInputs)
         val runner = RunnerImplementation(input.version.toString(), inputProvider = inputProvider)
         val ran = runCatchingToHttp("Failed to execute snippet") { runner.run(code) }
+        if (ran.errors.isEmpty()) {
+            log.info("Snippet executed successfully with inputs")
+        } else {
+            log.warn("Snippet execution with inputs failed: ${ran.errors}")
+        }
         return ExecutionDto(output = ran.output, errors = ran.errors)
     }
 
@@ -55,13 +75,14 @@ class SnippetEngineService(
         formatInput: AnalyzeCodeInput,
         code: String,
     ): String {
+        log.info("Formatting code with version: ${formatInput.version}")
         val config =
             setFormatVersionConfig(formatInput)
 
         val runner = RunnerImplementation(formatInput.version.toString())
 
         val formattedCode = runCatchingToHttp("Failed to format snippet") { runner.format(code, config) }
-
+        log.info("Code formatted successfully")
         return formattedCode
     }
 
@@ -69,13 +90,18 @@ class SnippetEngineService(
         lintInput: AnalyzeCodeInput,
         code: String,
     ): LintDto {
+        log.info("Linting code with version: ${lintInput.version}")
         val config: ConfigurableAnalyzersOptions =
             setLintVersionOptions(lintInput)
 
         val runner = RunnerImplementation(lintInput.version.toString())
 
         val lintErrors = runCatchingToHttp("Failed to lint snippet") { runner.lint(code, config) }
-
+        if (lintErrors.isEmpty()) {
+            log.info("Code linted successfully with no errors")
+        } else {
+            log.warn("Code linting found ${lintErrors.size} errors")
+        }
         return LintDto(lintErrors)
     }
 
@@ -83,12 +109,20 @@ class SnippetEngineService(
         input: TestSnippetInput,
         code: String,
     ): TestSnippetDto {
+        log.info("Testing snippet with version: ${input.version}")
         val runner = createRunnerForTest(input)
         val ran = runCatchingToHttp("Failed to run snippet tests") { runner.run(code) }
 
-        handleRunErrors(ran.errors, code)?.let { return it }
-        handleOutputVerification(input, ran.output, code)?.let { return it }
+        handleRunErrors(ran.errors, code)?.let {
+            log.warn("Test failed with errors: ${ran.errors}")
+            return it
+        }
+        handleOutputVerification(input, ran.output, code)?.let {
+            log.warn("Test failed: output verification failed")
+            return it
+        }
 
+        log.info("Test passed successfully")
         return TestSnippetDto(
             passed = true,
             failedAt = null,
@@ -118,10 +152,13 @@ class SnippetEngineService(
                 Version.V2 -> objectMapper.treeToValue(lintInput.config, ConfigurableAnalyzerOptionsV2::class.java)
             }
         } catch (ex: ResponseStatusException) {
+            log.warn("ResponseStatusException setting lint options: ${ex.message}")
             throw ex
         } catch (ex: IllegalArgumentException) {
+            log.warn("Invalid linter options: ${ex.message}")
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid linter options: ${ex.message}")
         } catch (ex: Exception) {
+            log.warn("Failed to prepare linter options: ${ex.message}")
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare linter options: ${ex.message}")
         }
 
@@ -132,10 +169,13 @@ class SnippetEngineService(
                 Version.V2 -> objectMapper.treeToValue(formatInput.config, ConfigurableFormatterOptionsV2::class.java)
             }
         } catch (ex: ResponseStatusException) {
+            log.warn("ResponseStatusException setting format config: ${ex.message}")
             throw ex
         } catch (ex: IllegalArgumentException) {
+            log.warn("Invalid formatter options: ${ex.message}")
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "Invalid formatter options: ${ex.message}")
         } catch (ex: Exception) {
+            log.warn("Failed to prepare formatter options: ${ex.message}")
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare formatter options: ${ex.message}")
         }
 
@@ -192,10 +232,13 @@ class SnippetEngineService(
         try {
             return block()
         } catch (ex: ResponseStatusException) {
+            log.warn("$prefix - ResponseStatusException: ${ex.message}")
             throw ex
         } catch (ex: IllegalArgumentException) {
+            log.warn("$prefix - IllegalArgumentException: ${ex.message}")
             throw ResponseStatusException(HttpStatus.BAD_REQUEST, "$prefix: ${ex.message}")
         } catch (ex: Exception) {
+            log.warn("$prefix - Exception: ${ex.message}")
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "$prefix: ${ex.message}")
         }
     }
