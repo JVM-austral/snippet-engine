@@ -48,20 +48,21 @@ class SnippetBucketClient : SnippetClient {
                     .retrieve()
                     .toEntity(String::class.java)
 
-            val result = when (response.statusCode.value()) {
-                201 -> {
-                    log.info("Asset created successfully at path: $path")
-                    "Asset creado correctamente en $path"
+            val result =
+                when (response.statusCode.value()) {
+                    201 -> {
+                        log.info("Asset created successfully at path: $path")
+                        "Asset creado correctamente en $path"
+                    }
+                    200 -> {
+                        log.info("Asset updated successfully at path: $path")
+                        "Asset actualizado correctamente en $path"
+                    }
+                    else -> {
+                        log.warn("Unexpected response when formatting asset at path: $path - Status: ${response.statusCode}")
+                        throw RuntimeException("Respuesta inesperada: ${response.statusCode}")
+                    }
                 }
-                200 -> {
-                    log.info("Asset updated successfully at path: $path")
-                    "Asset actualizado correctamente en $path"
-                }
-                else -> {
-                    log.warn("Unexpected response when formatting asset at path: $path - Status: ${response.statusCode}")
-                    throw RuntimeException("Respuesta inesperada: ${response.statusCode}")
-                }
-            }
             return result
         } catch (ex: RuntimeException) {
             throw ex
