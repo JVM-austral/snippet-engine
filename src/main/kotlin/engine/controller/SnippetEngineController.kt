@@ -27,6 +27,7 @@ class SnippetEngineController(
     val bucketService: SnippetClient,
 ) {
     val log = org.slf4j.LoggerFactory.getLogger(SnippetEngineController::class.java)
+
     @PostMapping("/parse")
     fun parseSnippet(
         @Valid @RequestBody parseInput: ParseInput,
