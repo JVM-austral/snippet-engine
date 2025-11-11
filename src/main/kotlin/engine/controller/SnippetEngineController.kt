@@ -26,12 +26,15 @@ class SnippetEngineController(
     val engineService: SnippetEngineService,
     val bucketService: SnippetClient,
 ) {
+    val log = org.slf4j.LoggerFactory.getLogger(SnippetEngineController::class.java)
     @PostMapping("/parse")
     fun parseSnippet(
         @Valid @RequestBody parseInput: ParseInput,
     ): ResponseEntity<ParseDto> {
+        log.info("Received parse request for assetPath: ${parseInput.assetPath}")
         val code = bucketService.getAsset(parseInput.assetPath)
         val parseDto = engineService.parseSnippet(parseInput, code)
+        log.info("Parsed code for assetPath: ${parseInput.assetPath}")
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(parseDto)
     }
 
@@ -39,8 +42,10 @@ class SnippetEngineController(
     fun testSnippet(
         @Valid @RequestBody testInput: TestSnippetInput,
     ): ResponseEntity<TestSnippetDto> {
+        log.info("Received test request for assetPath: ${testInput.assetPath}")
         val code = bucketService.getAsset(testInput.assetPath)
         val testDto = engineService.testSnippet(testInput, code)
+        log.info("Tested code for assetPath: ${testInput.assetPath}")
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(testDto)
     }
 
@@ -48,8 +53,10 @@ class SnippetEngineController(
     fun executeSnippet(
         @Valid @RequestBody executionInput: ExecutionInput,
     ): ResponseEntity<ExecutionDto> {
+        log.info("Received execute request for assetPath: ${executionInput.assetPath}")
         val code = bucketService.getAsset(executionInput.assetPath)
         val outputs = engineService.executeSnippet(executionInput, code)
+        log.info("Executed code for assetPath: ${executionInput.assetPath}")
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(outputs)
     }
 
@@ -64,7 +71,9 @@ class SnippetEngineController(
                 version = formatInput.version,
                 config = formatInput.config,
             )
+        log.info("Received format request for language: ${formatInput.language}, version: ${formatInput.version}")
         val output = engineService.formatWithOptions(inputAdapter, formatInput.code)
+        log.info("Formatted code snippet")
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(output)
     }
 
@@ -72,8 +81,10 @@ class SnippetEngineController(
     fun analyzeSnippet(
         @RequestBody @Valid lintInput: AnalyzeCodeInput,
     ): ResponseEntity<LintDto> {
+        log.info("Received analyze request for assetPath: ${lintInput.assetPath}")
         val code = bucketService.getAsset(lintInput.assetPath)
         val errors = engineService.lintWithOptions(lintInput, code)
+        log.info("Analyzed code for assetPath: ${lintInput.assetPath}")
         return ResponseEntity.status(HttpStatus.ACCEPTED).body(errors)
     }
 
