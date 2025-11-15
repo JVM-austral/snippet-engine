@@ -7,7 +7,6 @@ import org.springframework.web.client.RestClient
 
 @Service
 class SnippetManagerService {
-
     private val log = LoggerFactory.getLogger(SnippetManagerService::class.java)
     private val restClient =
         RestClient
@@ -31,5 +30,4 @@ class SnippetManagerService {
             else -> throw RuntimeException("Unexpected answer: ${response.statusCode}")
         }
     }
-
 }

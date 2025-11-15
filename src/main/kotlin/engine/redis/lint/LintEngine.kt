@@ -24,16 +24,19 @@ class LintEngine(
         val code = bucketService.getAsset(lintInput.assetPath)
         val output = engineService.lintWithOptions(lintInput, code)
         if (output.lintErrors.isNotEmpty()) {
-            managerService.setSnippetState( SetSnippetStateInput(
-                snippetId = response.snippetId,
-                state = CompilantState.NON_COMPILANT,
-            ) )
-        }
-        else{
-            managerService.setSnippetState( SetSnippetStateInput(
-                snippetId = response.snippetId,
-                state = CompilantState.COMPILANT,
-            ) )
+            managerService.setSnippetState(
+                SetSnippetStateInput(
+                    snippetId = response.snippetId,
+                    state = CompilantState.NON_COMPILANT,
+                ),
+            )
+        } else {
+            managerService.setSnippetState(
+                SetSnippetStateInput(
+                    snippetId = response.snippetId,
+                    state = CompilantState.COMPILANT,
+                ),
+            )
         }
     }
 
