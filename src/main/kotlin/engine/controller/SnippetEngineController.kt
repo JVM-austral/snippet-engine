@@ -24,7 +24,7 @@ import org.springframework.web.bind.annotation.RestController
 @RequestMapping("/engine")
 class SnippetEngineController(
     val engineService: SnippetEngineService,
-    val bucketService: SnippetClient,
+    val snippetClient: SnippetClient,
 ) {
     private val log = org.slf4j.LoggerFactory.getLogger(SnippetEngineController::class.java)
 
@@ -34,7 +34,7 @@ class SnippetEngineController(
     ): ResponseEntity<ParseDto> {
         log.info("Received parse request for assetPath: ${parseInput.assetPath}")
         return try {
-            val code = bucketService.getAsset(parseInput.assetPath)
+            val code = snippetClient.getAsset(parseInput.assetPath)
             val parseDto = engineService.parseSnippet(parseInput, code)
             log.info("Parsed code for assetPath: ${parseInput.assetPath}")
             ResponseEntity.status(HttpStatus.ACCEPTED).body(parseDto)
@@ -50,7 +50,7 @@ class SnippetEngineController(
     ): ResponseEntity<TestSnippetDto> {
         log.info("Received test request for assetPath: ${testInput.assetPath}")
         return try {
-            val code = bucketService.getAsset(testInput.assetPath)
+            val code = snippetClient.getAsset(testInput.assetPath)
             val testDto = engineService.testSnippet(testInput, code)
             log.info("Tested code for assetPath: ${testInput.assetPath}")
             ResponseEntity.status(HttpStatus.ACCEPTED).body(testDto)
@@ -66,7 +66,7 @@ class SnippetEngineController(
     ): ResponseEntity<ExecutionDto> {
         log.info("Received execute request for assetPath: ${executionInput.assetPath}")
         return try {
-            val code = bucketService.getAsset(executionInput.assetPath)
+            val code = snippetClient.getAsset(executionInput.assetPath)
             val outputs = engineService.executeSnippet(executionInput, code)
             log.info("Executed code for assetPath: ${executionInput.assetPath}")
             ResponseEntity.status(HttpStatus.ACCEPTED).body(outputs)
@@ -104,7 +104,7 @@ class SnippetEngineController(
     ): ResponseEntity<LintDto> {
         log.info("Received analyze request for assetPath: ${lintInput.assetPath}")
         return try {
-            val code = bucketService.getAsset(lintInput.assetPath)
+            val code = snippetClient.getAsset(lintInput.assetPath)
             val errors = engineService.lintWithOptions(lintInput, code)
             log.info("Analyzed code for assetPath: ${lintInput.assetPath}")
             ResponseEntity.status(HttpStatus.ACCEPTED).body(errors)

@@ -1,4 +1,4 @@
-package engine.redis.format
+package engine.redis.lint
 
 import engine.redis.RedisStreamConsumer
 import org.springframework.beans.factory.annotation.Value
@@ -11,11 +11,11 @@ import java.time.Duration
 
 @Component
 @Profile("!test")
-class FormatProductConsumer(
+class LintProductConsumer(
     redis: RedisTemplate<String, Any>,
-    @Value("\${stream.formatter}") streamKey: String,
-    @Value("\${groups.formatter}") groupId: String,
-    private val formatEngine: FormatEngine,
+    @Value("\${stream.linter}") streamKey: String,
+    @Value("\${groups.linter}") groupId: String,
+    private val lintEngine: LintEngine,
 ) : RedisStreamConsumer<String>(streamKey, groupId, redis) {
     override fun options(): StreamReceiver.StreamReceiverOptions<String, ObjectRecord<String, String>> =
         StreamReceiver.StreamReceiverOptions
@@ -26,7 +26,7 @@ class FormatProductConsumer(
 
     override fun onMessage(record: ObjectRecord<String, String>) {
         try {
-            formatEngine.applyFormattingEvent(record.value)
+            lintEngine.applyLintingEvent(record.value)
         } catch (e: Exception) {
             println("Error processing record: ${e.message}")
             println("Record: ${record.value}")
