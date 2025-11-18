@@ -6,18 +6,15 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
 @Service
-class SnippetManagerService {
+class SnippetManagerService(
+    private val managerRestClient: RestClient,
+) {
     private val log = LoggerFactory.getLogger(SnippetManagerService::class.java)
-    private val restClient =
-        RestClient
-            .builder()
-            .baseUrl("http://manager-service:8080")
-            .build()
 
     fun setSnippetState(input: SetSnippetStateInput): String {
         log.info("Setting state of snippet ${input.snippetId} to $input.state")
         val response =
-            restClient
+            managerRestClient
                 .put()
                 .uri("/snippets/compiling-state")
                 .body(input)
