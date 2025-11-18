@@ -179,7 +179,7 @@ class SnippetEngineService(
             throw ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Failed to prepare formatter options: ${ex.message}")
         }
 
-    private fun handleOutputVerification(
+    fun handleOutputVerification(
         input: TestSnippetInput,
         output: List<String>,
         code: String,
@@ -225,7 +225,7 @@ class SnippetEngineService(
         return -1
     }
 
-    private inline fun <T> runCatchingToHttp(
+    fun <T> runCatchingToHttp(
         prefix: String,
         block: () -> T,
     ): T {
