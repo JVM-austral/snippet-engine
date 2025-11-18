@@ -58,9 +58,7 @@ services:
     depends_on:
       - snippet_manager_db
     networks:
-      microservices-network:
-        aliases:
-          - manager-service
+      - microservices-network
 
   snippet_manager_db:
     container_name: snippet_manager_db
