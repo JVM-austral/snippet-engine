@@ -4,14 +4,10 @@ import org.springframework.stereotype.Service
 import org.springframework.web.client.RestClient
 
 @Service
-class SnippetBucketClient : SnippetClient {
+class SnippetBucketClient(
+    private val bucketRestClient: RestClient,
+) : SnippetClient {
     private val log = org.slf4j.LoggerFactory.getLogger(SnippetBucketClient::class.java)
-
-    private val restClient =
-        RestClient
-            .builder()
-            .baseUrl("http://asset-service:8080")
-            .build()
 
     override fun getAsset(
         path: String,
@@ -19,7 +15,7 @@ class SnippetBucketClient : SnippetClient {
         log.info("Fetching asset from path: $path")
         try {
             val response =
-                restClient
+                bucketRestClient
                     .get()
                     .uri(path)
                     .retrieve()
@@ -41,7 +37,7 @@ class SnippetBucketClient : SnippetClient {
         log.info("Formatting asset at path: $path")
         try {
             val response =
-                restClient
+                bucketRestClient
                     .put()
                     .uri(path)
                     .body(formattedCode)

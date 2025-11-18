@@ -24,6 +24,8 @@ spring:
 
 stream:
   formatter: "format-stream"
+  linter: "lint-stream"
 
 groups:
   formatter: "format-groups"
+  linter: "lint-groups"

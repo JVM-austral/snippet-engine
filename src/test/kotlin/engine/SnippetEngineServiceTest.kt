@@ -10,6 +10,9 @@ import engine.inputs.ParseInput
 import engine.inputs.TestSnippetInput
 import engine.service.SnippetEngineService
 import factory.Version
+import org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.assertThrows
+import org.springframework.web.server.ResponseStatusException
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
@@ -128,5 +131,23 @@ class SnippetEngineServiceTest {
         val result: TestSnippetDto = service.testSnippet(input, code)
         assertFalse(result.passed)
         assertNotNull(result.failedAt)
+    }
+
+    @Test
+    fun `runCatchingToHttp throws ResponseStatusException on IllegalArgumentException`() {
+        val ex =
+            assertThrows<ResponseStatusException> {
+                service.runCatchingToHttp("test") { throw IllegalArgumentException("bad") }
+            }
+        assertTrue(ex.message!!.contains("test"))
+    }
+
+    @Test
+    fun `runCatchingToHttp throws ResponseStatusException on generic Exception`() {
+        val ex =
+            assertThrows<ResponseStatusException> {
+                service.runCatchingToHttp("fail") { throw Exception("oops") }
+            }
+        assertTrue(ex.message!!.contains("fail"))
     }
 }
