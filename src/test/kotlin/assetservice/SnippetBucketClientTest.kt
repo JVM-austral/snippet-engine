@@ -39,7 +39,6 @@ class SnippetBucketClientTest {
         client = SnippetBucketClient(restClient)
     }
 
-
     @Test
     fun `getAsset returns body when successful`() {
         val path = "/assets/test.txt"
@@ -83,7 +82,6 @@ class SnippetBucketClientTest {
             client.getAsset(path)
         }
     }
-
 
     @Test
     fun `formatAsset returns creation message for 201`() {
