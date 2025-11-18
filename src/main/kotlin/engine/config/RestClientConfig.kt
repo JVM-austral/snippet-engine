@@ -10,7 +10,7 @@ class RestClientConfig {
     fun managerRestClient(): RestClient =
         RestClient
             .builder()
-            .baseUrl("http://manager-service:8080")
+            .baseUrl("http://snippet-manager-service:8080")
             .build()
 
     @Bean
